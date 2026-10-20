@@ -1,0 +1,20 @@
+# Build outputs
+*.exe
+*.obj
+*.pdb
+*.ilk
+
+# Runtime output
+security.log
+
+# Test binaries
+ipc_validation_tests.exe
+ipc_security_tests.exe
+directory_notify_tests.exe
+pocket_sort_tests.exe
+interpolation_tests.exe
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
