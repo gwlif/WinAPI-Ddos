@@ -1,0 +1,84 @@
+name: Windows build and portable checks
+
+on:
+  push:
+    paths:
+      - "main.c"
+      - "ipc_validation.h"
+      - "ipc_security.h"
+      - "pocket_sort.h"
+      - "directory_notify.h"
+      - "interpolation.h"
+      - "tests/**"
+      - ".github/workflows/windows-build.yml"
+  pull_request:
+    paths:
+      - "main.c"
+      - "ipc_validation.h"
+      - "ipc_security.h"
+      - "pocket_sort.h"
+      - "directory_notify.h"
+      - "interpolation.h"
+      - "tests/**"
+      - ".github/workflows/windows-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Compile Windows application
+        shell: cmd
+        run: cl /nologo /W4 /utf-8 /std:c11 /D_CRT_SECURE_NO_WARNINGS main.c user32.lib gdi32.lib advapi32.lib bcrypt.lib
+
+      - name: Compile and run portable C validation tests
+        shell: cmd
+        run: |
+          cl /nologo /W4 /WX /utf-8 /std:c11 tests\test_ipc_validation.c /Fe:ipc_validation_tests.exe
+          ipc_validation_tests.exe
+
+      - name: Compile and run allocation-safe pocket sort tests
+        shell: cmd
+        run: |
+          cl /nologo /W4 /WX /utf-8 /std:c11 tests\test_pocket_sort.c /Fe:pocket_sort_tests.exe
+          pocket_sort_tests.exe
+
+      - name: Compile and run directory notification parser tests
+        shell: cmd
+        run: |
+          cl /nologo /W4 /WX /utf-8 /std:c11 tests\test_directory_notify_windows.c /Fe:directory_notify_tests.exe
+          directory_notify_tests.exe
+
+      - name: Compile and run interpolation numerical tests
+        shell: cmd
+        run: |
+          cl /nologo /W4 /WX /utf-8 /std:c11 tests\test_interpolation.c /Fe:interpolation_tests.exe
+          interpolation_tests.exe
+
+      - name: Compile and run Windows ACL tests
+        shell: cmd
+        run: |
+          cl /nologo /W4 /WX /utf-8 /std:c11 tests\test_ipc_security_windows.c advapi32.lib /Fe:ipc_security_tests.exe
+          ipc_security_tests.exe
+
+      - name: Run source regression tests
+        shell: pwsh
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-windows-build
+          path: app.exe
+          if-no-files-found: error
