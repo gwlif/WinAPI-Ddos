@@ -40,7 +40,7 @@ jobs:
 
       - name: Compile Windows application
         shell: cmd
-        run: cl /nologo /W4 /utf-8 /std:c11 /D_CRT_SECURE_NO_WARNINGS main.c user32.lib gdi32.lib advapi32.lib bcrypt.lib
+        run: cl /nologo /W4 /utf-8 /std:c11 /D_CRT_SECURE_NO_WARNINGS main.c /Fe:app.exe user32.lib gdi32.lib advapi32.lib bcrypt.lib
 
       - name: Compile and run portable C validation tests
         shell: cmd
